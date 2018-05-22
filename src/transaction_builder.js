@@ -547,7 +547,7 @@ TransactionBuilder.prototype.addInput = function (txHash, vout, sequence, prevOu
     prevOutScript = txOut.script
     value = txOut.value
 
-    txHash = txHash.getHash()
+    txHash = txHash.hash
   }
 
   return this.__addInputUnsafe(txHash, vout, {
@@ -648,7 +648,7 @@ TransactionBuilder.prototype.__build = function (allowIncomplete) {
 
   if (!allowIncomplete) {
     // do not rely on this, its merely a last resort
-    if (this.__overMaximumFees(tx.virtualSize())) {
+    if (this.__overMaximumFees(tx.virtualSize)) {
       throw new Error('Transaction has absurd fees')
     }
   }

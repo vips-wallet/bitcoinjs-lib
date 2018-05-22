@@ -184,7 +184,7 @@ describe('Bitcoin-core', function () {
 
       it('should hash ' + txHex.slice(0, 40) + '... (' + hashTypeName + ')', function () {
         var transaction = bitcoin.Transaction.fromHex(txHex)
-        assert.strictEqual(transaction.toHex(), txHex)
+        assert.strictEqual(transaction.hex, txHex)
 
         var script = Buffer.from(scriptHex, 'hex')
         var scriptChunks = bitcoin.script.decompile(script)

@@ -72,7 +72,7 @@ function construct (f, dontSign) {
 
       if (sign.stage) {
         var tx = txb.buildIncomplete()
-        assert.strictEqual(tx.toHex(), stages.shift())
+        assert.strictEqual(tx.hex, stages.shift())
         txb = TransactionBuilder.fromTransaction(tx, network)
       }
     })
@@ -101,7 +101,7 @@ describe('TransactionBuilder', function () {
         var txb = TransactionBuilder.fromTransaction(tx, network)
         var txAfter = f.incomplete ? txb.buildIncomplete() : txb.build()
 
-        assert.strictEqual(txAfter.toHex(), f.txHex)
+        assert.strictEqual(txAfter.hex, f.txHex)
         assert.strictEqual(txb.network, network)
       })
     })
@@ -192,7 +192,7 @@ describe('TransactionBuilder', function () {
       assert.strictEqual(vin, 0)
 
       var txIn = txb.__tx.ins[0]
-      assert.deepEqual(txIn.hash, prevTx.getHash())
+      assert.deepEqual(txIn.hash, prevTx.hash)
       assert.strictEqual(txIn.index, 1)
       assert.strictEqual(txIn.sequence, 54)
       assert.strictEqual(txb.__inputs[0].prevOutScript, scripts[1])
@@ -306,7 +306,7 @@ describe('TransactionBuilder', function () {
       txb.addInput('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1)
       txb.addOutput('1111111111111111111114oLvT2', 100000)
       txb.sign(0, keyPair)
-      assert.equal(txb.build().toHex(), '0100000001ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff010000002c0930060201000201000121030303030303030303030303030303030303030303030303030303030303030303ffffffff01a0860100000000001976a914000000000000000000000000000000000000000088ac00000000')
+      assert.equal(txb.build().hex, '0100000001ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff010000002c0930060201000201000121030303030303030303030303030303030303030303030303030303030303030303ffffffff01a0860100000000001976a914000000000000000000000000000000000000000088ac00000000')
     })
 
     fixtures.invalid.sign.forEach(function (f) {
@@ -346,7 +346,7 @@ describe('TransactionBuilder', function () {
         var txb = construct(f)
         var tx = f.incomplete ? txb.buildIncomplete() : txb.build()
 
-        assert.strictEqual(tx.toHex(), f.txHex)
+        assert.strictEqual(tx.hex, f.txHex)
       })
     })
 
@@ -481,7 +481,7 @@ describe('TransactionBuilder', function () {
         })
 
         tx = txb.build()
-        assert.strictEqual(tx.toHex(), f.txHex)
+        assert.strictEqual(tx.hex, f.txHex)
       })
     })
   })
@@ -529,8 +529,8 @@ describe('TransactionBuilder', function () {
       // 2-of-2 signed only once
       var tx = txb.buildIncomplete()
       // Only input is segwit, so txid should be accurate with the final tx
-      assert.equal(tx.getId(), 'f15d0a65b21b4471405b21a099f8b18e1ae4d46d55efbd0f4766cf11ad6cb821')
-      var txHex = tx.toHex()
+      assert.equal(tx.id, 'f15d0a65b21b4471405b21a099f8b18e1ae4d46d55efbd0f4766cf11ad6cb821')
+      var txHex = tx.hex
       var newTxb = TransactionBuilder.fromTransaction(Transaction.fromHex(txHex))
       // input should have the key 'witness' set to true
       assert.equal(newTxb.__inputs[0].witness, true)
@@ -552,7 +552,7 @@ describe('TransactionBuilder', function () {
       txb.sign(0, keyPair2, redeemScript)
 
       var tx2 = txb.build()
-      assert.equal(tx2.getId(), 'eab59618a564e361adef6d918bd792903c3d41bcf1220137364fb847880467f9')
+      assert.equal(tx2.id, 'eab59618a564e361adef6d918bd792903c3d41bcf1220137364fb847880467f9')
       assert.equal(bscript.toASM(tx2.ins[0].script), 'OP_0 3045022100daf0f4f3339d9fbab42b098045c1e4958ee3b308f4ae17be80b63808558d0adb02202f07e3d1f79dc8da285ae0d7f68083d769c11f5621ebd9691d6b48c0d4283d7d01 3045022100a346c61738304eac5e7702188764d19cdf68f4466196729db096d6c87ce18cdd022018c0e8ad03054b0e7e235cda6bedecf35881d7aa7d94ff425a8ace7220f38af001 52410479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b84104c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee51ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a4104f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e67253ae')
     })
 
@@ -561,20 +561,20 @@ describe('TransactionBuilder', function () {
       txb.setVersion(1)
       txb.addInput('aa94ab02c182214f090e99a0d57021caffd0f195a81c24602b1028b130b63e31', 0)
 
-      var incomplete = txb.buildIncomplete().toHex()
+      var incomplete = txb.buildIncomplete().hex
       var keyPair = ECPair.fromWIF('L1uyy5qTuGrVXrmrsvHWHgVzW9kKdrp27wBC7Vs6nZDTF2BRUVwy')
 
       // sign, as expected
       txb.addOutput('1Gokm82v6DmtwKEB8AiVhm82hyFSsEvBDK', 15000)
       txb.sign(0, keyPair)
-      var txId = txb.build().getId()
+      var txId = txb.build().id
       assert.equal(txId, '54f097315acbaedb92a95455da3368eb45981cdae5ffbc387a9afc872c0f29b3')
 
       // and, repeat
       txb = TransactionBuilder.fromTransaction(Transaction.fromHex(incomplete))
       txb.addOutput('1Gokm82v6DmtwKEB8AiVhm82hyFSsEvBDK', 15000)
       txb.sign(0, keyPair)
-      var txId2 = txb.build().getId()
+      var txId2 = txb.build().id
       assert.equal(txId, txId2)
     })
   })

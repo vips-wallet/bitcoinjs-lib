@@ -1,8 +1,8 @@
 var Buffer = require('safe-buffer').Buffer
 var bcrypto = require('./crypto')
 var fastMerkleRoot = require('merkle-lib/fastRoot')
-var typeforce = require('typeforce')
-var types = require('./types')
+// var typeforce = require('typeforce')
+// var types = require('./types')
 var varuint = require('varuint-bitcoin')
 
 var Transaction = require('./transaction')
@@ -55,7 +55,7 @@ Block.fromBuffer = function (buffer) {
 
   function readTransaction () {
     var tx = Transaction.fromBuffer(buffer.slice(offset), true)
-    offset += tx.byteLength()
+    offset += tx.byteLength
     return tx
   }
 
@@ -74,7 +74,7 @@ Block.prototype.byteLength = function (headersOnly) {
   if (headersOnly || !this.transactions) return 80
 
   return 80 + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
-    return a + x.byteLength()
+    return a + x.byteLength
   }, 0)
 }
 
@@ -129,7 +129,7 @@ Block.prototype.toBuffer = function (headersOnly) {
   offset += varuint.encode.bytes
 
   this.transactions.forEach(function (tx) {
-    var txSize = tx.byteLength() // TODO: extract from toBuffer?
+    var txSize = tx.byteLength // TODO: extract from toBuffer?
     tx.toBuffer(buffer, offset)
     offset += txSize
   })
@@ -150,11 +150,11 @@ Block.calculateTarget = function (bits) {
 }
 
 Block.calculateMerkleRoot = function (transactions) {
-  typeforce([{ getHash: types.Function }], transactions)
+  // typeforce([{ getHash: types.Function }], transactions) ToDo: What should this be?
   if (transactions.length === 0) throw TypeError('Cannot compute merkle root for zero transactions')
 
   var hashes = transactions.map(function (transaction) {
-    return transaction.getHash()
+    return transaction.hash
   })
 
   return fastMerkleRoot(hashes, bcrypto.hash256)

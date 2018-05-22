@@ -55,14 +55,14 @@ describe('Transaction', function () {
       it('imports ' + f.description + ' (' + id + ')', function () {
         var actual = Transaction.fromHex(txHex)
 
-        assert.strictEqual(actual.toHex(), txHex)
+        assert.strictEqual(actual.hex, txHex)
       })
 
       if (f.whex) {
         it('imports ' + f.description + ' (' + id + ') as witness', function () {
           var actual = Transaction.fromHex(f.whex)
 
-          assert.strictEqual(actual.toHex(), f.whex)
+          assert.strictEqual(actual.hex, f.whex)
         })
       }
     }
@@ -91,13 +91,13 @@ describe('Transaction', function () {
     fixtures.valid.forEach(function (f) {
       it('exports ' + f.description + ' (' + f.id + ')', function () {
         var actual = fromRaw(f.raw, true)
-        assert.strictEqual(actual.toHex(), f.hex)
+        assert.strictEqual(actual.hex, f.hex)
       })
 
       if (f.whex) {
         it('exports ' + f.description + ' (' + f.id + ') as witness', function () {
           var wactual = fromRaw(f.raw)
-          assert.strictEqual(wactual.toHex(), f.whex)
+          assert.strictEqual(wactual.hex, f.whex)
         })
       }
     })
@@ -105,7 +105,7 @@ describe('Transaction', function () {
     it('accepts target Buffer and offset parameters', function () {
       var f = fixtures.valid[0]
       var actual = fromRaw(f.raw)
-      var byteLength = actual.byteLength()
+      var byteLength = actual.byteLength
 
       var target = Buffer.alloc(byteLength * 2)
       var a = actual.toBuffer(target, 0)
@@ -124,7 +124,7 @@ describe('Transaction', function () {
   describe('hasWitnesses', function () {
     fixtures.valid.forEach(function (f) {
       it('detects if the transaction has witnesses: ' + (f.whex ? 'true' : 'false'), function () {
-        assert.strictEqual(Transaction.fromHex(f.whex ? f.whex : f.hex).hasWitnesses(), !!f.whex)
+        assert.strictEqual(Transaction.fromHex(f.whex ? f.whex : f.hex).hasWitnesses, !!f.whex)
       })
     })
   })
@@ -134,7 +134,7 @@ describe('Transaction', function () {
       fixtures.valid.forEach(function (f) {
         var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex)
 
-        assert.strictEqual(transaction.virtualSize(), f.virtualSize)
+        assert.strictEqual(transaction.virtualSize, f.virtualSize)
       })
     })
 
@@ -142,7 +142,7 @@ describe('Transaction', function () {
       fixtures.valid.forEach(function (f) {
         var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex)
 
-        assert.strictEqual(transaction.weight(), f.weight)
+        assert.strictEqual(transaction.weight, f.weight)
       })
     })
   })
@@ -212,8 +212,8 @@ describe('Transaction', function () {
       it('should return the id for ' + f.id + '(' + f.description + ')', function () {
         var tx = Transaction.fromHex(f.whex || f.hex)
 
-        assert.strictEqual(tx.getHash().toString('hex'), f.hash)
-        assert.strictEqual(tx.getId(), f.id)
+        assert.strictEqual(tx.hash.toString('hex'), f.hash)
+        assert.strictEqual(tx.id, f.id)
       })
     }
 
@@ -225,7 +225,7 @@ describe('Transaction', function () {
       it('should return ' + f.coinbase + ' for ' + f.id + '(' + f.description + ')', function () {
         var tx = Transaction.fromHex(f.hex)
 
-        assert.strictEqual(tx.isCoinbase(), f.coinbase)
+        assert.strictEqual(tx.isCoinbase, f.coinbase)
       })
     }
 

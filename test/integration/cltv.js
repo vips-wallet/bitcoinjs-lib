@@ -61,11 +61,11 @@ describe('bitcoinjs-lib (transactions w/ CLTV)', function () {
       ], redeemScript)
       tx.setInputScript(0, redeemScriptSig)
 
-      regtestUtils.broadcast(tx.toHex(), function (err) {
+      regtestUtils.broadcast(tx.hex, function (err) {
         if (err) return done(err)
 
         regtestUtils.verify({
-          txId: tx.getId(),
+          txId: tx.id,
           address: regtestUtils.RANDOM_ADDRESS,
           vout: 0,
           value: 7e4
@@ -106,7 +106,7 @@ describe('bitcoinjs-lib (transactions w/ CLTV)', function () {
         tx.setInputScript(0, redeemScriptSig)
 
         // TODO: test that it failures _prior_ to expiry, unfortunately, race conditions when run concurrently
-//          regtestUtils.broadcast(tx.toHex(), function (err) {
+//          regtestUtils.broadcast(tx.hex, function (err) {
 //            // fails before the expiry
 //            assert.throws(function () {
 //              if (err) throw err
@@ -116,11 +116,11 @@ describe('bitcoinjs-lib (transactions w/ CLTV)', function () {
         regtestUtils.mine(51, function (err) {
           if (err) return done(err)
 
-          regtestUtils.broadcast(tx.toHex(), function (err) {
+          regtestUtils.broadcast(tx.hex, function (err) {
             if (err) return done(err)
 
             regtestUtils.verify({
-              txId: tx.getId(),
+              txId: tx.id,
               address: regtestUtils.RANDOM_ADDRESS,
               vout: 0,
               value: 7e4
@@ -161,11 +161,11 @@ describe('bitcoinjs-lib (transactions w/ CLTV)', function () {
       ], redeemScript)
       tx.setInputScript(0, redeemScriptSig)
 
-      regtestUtils.broadcast(tx.toHex(), function (err) {
+      regtestUtils.broadcast(tx.hex, function (err) {
         if (err) return done(err)
 
         regtestUtils.verify({
-          txId: tx.getId(),
+          txId: tx.id,
           address: regtestUtils.RANDOM_ADDRESS,
           vout: 0,
           value: 8e4
@@ -203,7 +203,7 @@ describe('bitcoinjs-lib (transactions w/ CLTV)', function () {
       ], redeemScript)
       tx.setInputScript(0, redeemScriptSig)
 
-      regtestUtils.broadcast(tx.toHex(), function (err) {
+      regtestUtils.broadcast(tx.hex, function (err) {
         assert.throws(function () {
           if (err) throw err
         }, /Error: 64: non-final/)
