@@ -47,8 +47,6 @@ class Transaction {
     this._id = null
     this._buffer = null
     this._hex = null
-
-    this._changed = false
   }
 
   static get DEFAULT_SEQUENCE () { return 0xffffffff }
@@ -60,38 +58,35 @@ class Transaction {
   static get ADVANCED_TRANSACTION_FLAG () { return 0x01 }
 
   get isCoinbase () {
-    if (this._isCoinbase !== null && this._changed === false) {
+    if (this._isCoinbase !== null) {
       return this._isCoinbase
     }
     this._isCoinbase = this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
-    this._changed = false
     return this._isCoinbase
   }
 
   get hasWitnesses () {
-    if (this._hasWitnesses !== null && this._changed === false) {
+    if (this._hasWitnesses !== null) {
       return this._hasWitnesses
     }
     this._hasWitnesses = this.ins.some((x) =>
       x.witness.length !== 0
     )
-    this._changed = false
     return this._hasWitnesses
   }
 
   get weight () {
-    if (this._weight !== null && this._changed === false) {
+    if (this._weight !== null) {
       return this._weight
     }
     const base = this.__byteLength(false)
     const total = this.__byteLength(true)
     this._weight = base * 3 + total
-    this._changed = false
     return this._weight
   }
 
   get virtualSize () {
-    if (this._virtualSize !== null && this._changed === false) {
+    if (this._virtualSize !== null) {
       return this._virtualSize
     }
     this._virtualSize = Math.ceil(this.weight / 4)
@@ -99,25 +94,23 @@ class Transaction {
   }
 
   get byteLength () {
-    if (this._byteLength !== null && this._changed === false) {
+    if (this._byteLength !== null) {
       return this._byteLength
     }
     this._byteLength = this.__byteLength(true)
-    this._changed = false
     return this._byteLength
   }
 
   get hash () {
-    if (this._hash !== null && this._changed === false) {
+    if (this._hash !== null) {
       return this._hash
     }
     this._hash = bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
-    this._changed = false
     return this._hash
   }
 
   get id () {
-    if (this._id !== null && this._changed === false) {
+    if (this._id !== null) {
       return this._id
     }
     // transaction hash's are displayed in reverse order
@@ -126,16 +119,15 @@ class Transaction {
   }
 
   get buffer () {
-    if (this._buffer !== null && this._changed === false) {
+    if (this._buffer !== null) {
       return this._buffer
     }
     this._buffer = this.__toBuffer(undefined, undefined, true)
-    this._changed = false
     return this._buffer
   }
 
   get hex () {
-    if (this._hex !== null && this._changed === false) {
+    if (this._hex !== null) {
       return this._hex
     }
     this._hex = this.buffer.toString('hex')
@@ -463,8 +455,6 @@ class Transaction {
     this._id = null
     this._buffer = null
     this._hex = null
-
-    this._changed = true
   }
 }
 
