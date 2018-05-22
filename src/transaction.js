@@ -37,6 +37,18 @@ class Transaction {
     this.locktime = 0
     this.ins = []
     this.outs = []
+
+    this._isCoinbase = null
+    this._hasWitnesses = null
+    this._weight = null
+    this._virtualSize = null
+    this._byteLength = null
+    this._hash = null
+    this._id = null
+    this._buffer = null
+    this._hex = null
+
+    this._changed = false
   }
 
   static get DEFAULT_SEQUENCE () { return 0xffffffff }
@@ -48,44 +60,86 @@ class Transaction {
   static get ADVANCED_TRANSACTION_FLAG () { return 0x01 }
 
   get isCoinbase () {
-    return this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
+    if (this._isCoinbase !== null && this._changed === false) {
+      return this._isCoinbase
+    }
+    this._isCoinbase = this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
+    this._changed = false
+    return this._isCoinbase
   }
 
   get hasWitnesses () {
-    return this.ins.some((x) =>
+    if (this._hasWitnesses !== null && this._changed === false) {
+      return this._hasWitnesses
+    }
+    this._hasWitnesses = this.ins.some((x) =>
       x.witness.length !== 0
     )
+    this._changed = false
+    return this._hasWitnesses
   }
 
   get weight () {
+    if (this._weight !== null && this._changed === false) {
+      return this._weight
+    }
     const base = this.__byteLength(false)
     const total = this.__byteLength(true)
-    return base * 3 + total
+    this._weight = base * 3 + total
+    this._changed = false
+    return this._weight
   }
 
   get virtualSize () {
-    return Math.ceil(this.weight / 4)
+    if (this._virtualSize !== null && this._changed === false) {
+      return this._virtualSize
+    }
+    this._virtualSize = Math.ceil(this.weight / 4)
+    return this._virtualSize
   }
 
   get byteLength () {
-    return this.__byteLength(true)
+    if (this._byteLength !== null && this._changed === false) {
+      return this._byteLength
+    }
+    this._byteLength = this.__byteLength(true)
+    this._changed = false
+    return this._byteLength
   }
 
   get hash () {
-    return bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
+    if (this._hash !== null && this._changed === false) {
+      return this._hash
+    }
+    this._hash = bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
+    this._changed = false
+    return this._hash
   }
 
   get id () {
+    if (this._id !== null && this._changed === false) {
+      return this._id
+    }
     // transaction hash's are displayed in reverse order
-    return this.hash.reverse().toString('hex')
+    this._id = this.hash.reverse().toString('hex')
+    return this._id
   }
 
   get buffer () {
-    return this.__toBuffer(undefined, undefined, true)
+    if (this._buffer !== null && this._changed === false) {
+      return this._buffer
+    }
+    this._buffer = this.__toBuffer(undefined, undefined, true)
+    this._changed = false
+    return this._buffer
   }
 
   get hex () {
-    return this.buffer.toString('hex')
+    if (this._hex !== null && this._changed === false) {
+      return this._hex
+    }
+    this._hex = this.buffer.toString('hex')
+    return this._hex
   }
 
   addInput (hash, index, sequence, scriptSig) {
@@ -100,6 +154,8 @@ class Transaction {
       sequence = Transaction.DEFAULT_SEQUENCE
     }
 
+    this.clearCache()
+
     // Add the input and return the input's index
     return (this.ins.push({
       hash: hash,
@@ -112,6 +168,8 @@ class Transaction {
 
   addOutput (scriptPubKey, value) {
     typeforce(types.tuple(types.Buffer, types.Satoshi), arguments)
+
+    this.clearCache()
 
     // Add the output and return the output's index
     return (this.outs.push({
@@ -382,13 +440,31 @@ class Transaction {
   setInputScript (index, scriptSig) {
     typeforce(types.tuple(types.Number, types.Buffer), arguments)
 
+    this.clearCache()
+
     this.ins[index].script = scriptSig
   }
 
   setWitness (index, witness) {
     typeforce(types.tuple(types.Number, [types.Buffer]), arguments)
 
+    this.clearCache()
+
     this.ins[index].witness = witness
+  }
+
+  clearCache () {
+    this._isCoinbase = null
+    this._hasWitnesses = null
+    this._weight = null
+    this._virtualSize = null
+    this._byteLength = null
+    this._hash = null
+    this._id = null
+    this._buffer = null
+    this._hex = null
+
+    this._changed = true
   }
 }
 
