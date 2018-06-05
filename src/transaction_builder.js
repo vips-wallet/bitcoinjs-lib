@@ -29,7 +29,7 @@ function supportedP2SHType (type) {
   ].indexOf(type) !== -1
 }
 
-function expandInput (scriptSig, witnessStack, type) {
+function expandInput (scriptSig, witnessStack, type, scriptPubKey) {
   if (scriptSig.length === 0 && witnessStack.length === 0) return {}
   if (!type) {
     let ssType = btemplates.classifyInput(scriptSig, true)
@@ -74,12 +74,14 @@ function expandInput (scriptSig, witnessStack, type) {
     }
 
     case scriptTypes.MULTISIG: {
-      let { signatures } = payments.p2ms({ input: scriptSig }, { allowIncomplete: true })
-//        signatures = signatures.map(x => x === OPS.OP_0 ? undefined : x)
+      let { pubkeys, signatures } = payments.p2ms({
+        input: scriptSig,
+        output: scriptPubKey
+      }, { allowIncomplete: true })
 
       return {
         prevOutType: scriptTypes.MULTISIG,
-        pubKeys: signatures.map(() => undefined),
+        pubKeys: pubkeys,
         signatures: signatures
       }
     }
@@ -91,7 +93,7 @@ function expandInput (scriptSig, witnessStack, type) {
       witness: witnessStack
     })
     let outputType = btemplates.classifyOutput(redeem.output)
-    let expanded = expandInput(redeem.input, redeem.witness, outputType)
+    let expanded = expandInput(redeem.input, redeem.witness, outputType, redeem.output)
     if (!expanded.prevOutType) return {}
 
     return {
@@ -117,7 +119,7 @@ function expandInput (scriptSig, witnessStack, type) {
     if (outputType === scriptTypes.P2WPKH) {
       expanded = expandInput(redeem.input, redeem.witness, outputType)
     } else {
-      expanded = expandInput(bscript.compile(redeem.witness), [], outputType)
+      expanded = expandInput(bscript.compile(redeem.witness), [], outputType, redeem.output)
     }
     if (!expanded.prevOutType) return {}
 
