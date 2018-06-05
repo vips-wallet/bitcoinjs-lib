@@ -70,6 +70,10 @@ function preform (x) {
   x = Object.assign({}, x)
 
   if (x.network) x.network = bnetworks[x.network]
+  if (typeof x.inputHex === 'string') {
+    x.input = Buffer.from(x.inputHex, 'hex')
+    delete x.inputHex
+  }
   if (typeof x.outputHex === 'string') {
     x.output = Buffer.from(x.outputHex, 'hex')
     delete x.outputHex

@@ -234,6 +234,12 @@
       }
     },
     {
+      "exception": "Input too short",
+      "arguments": {
+        "inputHex": "01ff02ff"
+      }
+    },
+    {
       "exception": "Input is invalid",
       "arguments": {
         "input": "OP_0 OP_0"
@@ -269,6 +275,12 @@
       }
     },
     {
+      "exception": "Redeem.output too short",
+      "arguments": {
+        "inputHex": "021000"
+      }
+    },
+    {
       "exception": "Hash mismatch",
       "arguments": {
         "hash": "ffffffffffffffffffffffffffffffffffffffff",
@@ -276,6 +288,12 @@
           "input": "OP_0",
           "output": "ffff"
         }
+      }
+    },
+    {
+      "exception": "Empty input",
+      "arguments": {
+        "inputHex": "01ff"
       }
     }
   ],

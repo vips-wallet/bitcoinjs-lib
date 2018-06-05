@@ -45,11 +45,20 @@ function p2sh (a, opts) {
     witness: typef.maybe(typef.arrayOf(typef.Buffer))
   }, a)
 
-  let _address = lazy.value(function () { return baddress.fromBase58Check(a.address) })
-  let _chunks = lazy.value(function () { return bscript.decompile(a.input) })
-
   let network = a.network || BITCOIN_NETWORK
   let o = { network }
+
+  let _address = lazy.value(function () { return baddress.fromBase58Check(a.address) })
+  let _chunks = lazy.value(function () { return bscript.decompile(a.input) })
+  let _redeem = lazy.value(function () {
+    let chunks = _chunks()
+    return {
+      network: network,
+      output: chunks[chunks.length - 1],
+      input: bscript.compile(chunks.slice(0, -1)),
+      witness: a.witness || []
+    }
+  })
 
   // output dependents
   lazy.prop(o, 'address', function () {
@@ -74,13 +83,7 @@ function p2sh (a, opts) {
   // input dependents
   lazy.prop(o, 'redeem', function () {
     if (!a.input) return
-    let chunks = _chunks()
-    return {
-      network: network,
-      output: chunks[chunks.length - 1],
-      input: bscript.compile(chunks.slice(0, -1)),
-      witness: a.witness || []
-    }
+    return _redeem()
   })
   lazy.prop(o, 'input', function () {
     if (!a.redeem || !a.redeem.input) return
@@ -118,10 +121,34 @@ function p2sh (a, opts) {
       else hash = hash2
     }
 
+    function checkRedeem (redeem) {
+      // is the redeem output empty/invalid?
+      let decompile = bscript.decompile(redeem.output)
+      if (!decompile || decompile.length < 1) throw new TypeError('Redeem.output too short')
+
+      // match hash against other sources
+      let hash2 = bcrypto.hash160(redeem.output)
+      if (hash && !hash.equals(hash2)) throw new TypeError('Hash mismatch')
+      else hash = hash2
+
+      if (redeem.input) {
+        let hasInput = redeem.input.length > 0
+        let hasWitness = redeem.witness && redeem.witness.length > 0
+        if (!hasInput && !hasWitness) throw new TypeError('Empty input')
+        if (hasInput && hasWitness) throw new TypeError('Input and witness provided')
+        if (hasInput) {
+          let richunks = bscript.decompile(redeem.input)
+          if (!bscript.isPushOnly(richunks)) throw new TypeError('Non push-only scriptSig')
+        }
+      }
+    }
+
     if (a.input) {
       let chunks = _chunks()
-      if (chunks.length < 1) throw new TypeError('Input too short')
-      if (!Buffer.isBuffer(o.redeem.output)) throw new TypeError('Input is invalid')
+      if (!chunks || chunks.length < 1) throw new TypeError('Input too short')
+      if (!Buffer.isBuffer(_redeem().output)) throw new TypeError('Input is invalid')
+
+      checkRedeem(_redeem())
     }
 
     if (a.redeem) {
@@ -131,31 +158,7 @@ function p2sh (a, opts) {
         if (a.redeem.input && !a.redeem.input.equals(o.redeem.input)) throw new TypeError('Redeem.input mismatch')
       }
 
-      let hash2 = bcrypto.hash160(a.redeem.output)
-      if (hash && !hash.equals(hash2)) throw new TypeError('Hash mismatch')
-      else hash = hash2
-
-      o.redeem = a.redeem
-    }
-
-    if (o.redeem) {
-      // is the redeem output empty/invalid?
-      if (bscript.decompile(o.redeem.output).length < 1) throw new TypeError('Redeem.output too short')
-
-      // match hash against other sources
-      let rOutputHash = bcrypto.hash160(o.redeem.output)
-      if (o.hash && !o.hash.equals(rOutputHash)) throw new TypeError('Hash mismatch')
-
-      if (o.redeem.input) {
-        let hasInput = o.redeem.input.length > 0
-        let hasWitness = o.witness && o.witness.length > 0
-        if (!hasInput && !hasWitness) throw new TypeError('Empty input')
-        if (hasInput && hasWitness) throw new TypeError('Input and witness provided')
-        if (hasInput) {
-          let rInputChunks = bscript.decompile(o.redeem.input)
-          if (!bscript.isPushOnly(rInputChunks)) throw new TypeError('Non push-only scriptSig')
-        }
-      }
+      checkRedeem(a.redeem)
     }
 
     if (a.witness) {
