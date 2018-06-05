@@ -8,18 +8,23 @@ var ops = require('bitcoin-ops')
 var typeforce = require('typeforce')
 var types = require('./types')
 var scriptTypes = btemplates.types
-var SIGNABLE = [btemplates.types.P2PKH, btemplates.types.P2PK, btemplates.types.MULTISIG]
-var P2SH = SIGNABLE.concat([btemplates.types.P2WPKH, btemplates.types.P2WSH])
 
 var ECPair = require('./ecpair')
 var Transaction = require('./transaction')
 
 function supportedType (type) {
-  return SIGNABLE.indexOf(type) !== -1
+  return [
+    btemplates.types.P2PKH,
+    btemplates.types.P2PK,
+    btemplates.types.MULTISIG
+  ].indexOf(type) !== -1
 }
 
 function supportedP2SHType (type) {
-  return P2SH.indexOf(type) !== -1
+  return supportedType(type) || [
+    btemplates.types.P2WPKH,
+    btemplates.types.P2WSH
+  ].indexOf(type) !== -1
 }
 
 function extractChunks (type, chunks, script) {
