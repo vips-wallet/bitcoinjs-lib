@@ -1,11 +1,9 @@
-# BitcoinJS (bitcoinjs-lib)
-[![Build Status](https://travis-ci.org/bitcoinjs/bitcoinjs-lib.png?branch=master)](https://travis-ci.org/bitcoinjs/bitcoinjs-lib)
-[![NPM](https://img.shields.io/npm/v/bitcoinjs-lib.svg)](https://www.npmjs.org/package/bitcoinjs-lib)
-[![tip for next commit](https://tip4commit.com/projects/735.svg)](http://tip4commit.com/projects/735)
+# BitcoinJS for VIPSTARCOIN (bitcoinjs-lib-vips)
+[![Build Status](https://travis-ci.org/vips-wallet/bitcoinjs-lib-vips.png?branch=master)](https://travis-ci.org/vips-wallet/bitcoinjs-lib-vips)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-The pure JavaScript Bitcoin library for node.js and browsers.
+The pure JavaScript VIPSTARCOIN library for node.js and browsers.
 Estimated to be in use by over 15 million wallet users and is the backbone for almost all Bitcoin web wallets in production today.
 
 
@@ -25,7 +23,7 @@ Estimated to be in use by over 15 million wallet users and is the backbone for a
 
 ## Should I use this in production?
 If you are thinking of using the master branch of this library in production, **stop**.
-Master is not stable; it is our development branch, and [only tagged releases may be classified as stable](https://github.com/bitcoinjs/bitcoinjs-lib/tags).
+Master is not stable; it is our development branch, and [only tagged releases may be classified as stable](https://github.com/vips-wallet/bitcoinjs-lib-vips/tags).
 
 
 ## Installation

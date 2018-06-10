@@ -5,14 +5,22 @@ function UInt31 (value) {
   return typeforce.UInt32(value) && value <= UINT31_MAX
 }
 
+var UINT64_MAX = Math.pow(2, 64) - 1
+function UInt64 (value) {
+  return typeof value === 'number' &&
+    value >= 0 &&
+    value <= UINT64_MAX &&
+    Math.floor(value) === value
+}
+
 function BIP32Path (value) {
   return typeforce.String(value) && value.match(/^(m\/)?(\d+'?\/)*\d+'?$/)
 }
 BIP32Path.toJSON = function () { return 'BIP32 derivation path' }
 
-var SATOSHI_MAX = 21 * 1e14
+var SATOSHI_MAX = 7 * 1e18
 function Satoshi (value) {
-  return typeforce.UInt53(value) && value <= SATOSHI_MAX
+  return UInt64(value) && value <= SATOSHI_MAX
 }
 
 // external dependent types
