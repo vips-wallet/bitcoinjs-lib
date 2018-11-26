@@ -1,16 +1,15 @@
-# BitcoinJS (bitcoinjs-lib)
-[![Build Status](https://travis-ci.org/bitcoinjs/bitcoinjs-lib.png?branch=master)](https://travis-ci.org/bitcoinjs/bitcoinjs-lib)
-[![NPM](https://img.shields.io/npm/v/bitcoinjs-lib.svg)](https://www.npmjs.org/package/bitcoinjs-lib)
+# BitcoinJS for VIPSTARCOIN (bitcoinjs-lib-vips)
+[![Build Status](https://travis-ci.org/vips-wallet/bitcoinjs-lib-vips.png?branch=master)](https://travis-ci.org/vips-wallet/bitcoinjs-lib-vips)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-A javascript Bitcoin library for node.js and browsers.
+A javascript VIPSTARCOIN library for node.js and browsers.
 
 Released under the terms of the [MIT LICENSE](LICENSE).
 
 ## Should I use this in production?
 If you are thinking of using the *master* branch of this library in production, **stop**.
-Master is not stable; it is our development branch, and [only tagged releases may be classified as stable](https://github.com/bitcoinjs/bitcoinjs-lib/tags).
+Master is not stable; it is our development branch, and [only tagged releases may be classified as stable](https://github.com/vips-wallet/bitcoinjs-lib-vips/tags).
 
 
 ## Can I trust this code?
@@ -18,7 +17,7 @@ Master is not stable; it is our development branch, and [only tagged releases ma
 
 We recommend every user of this library and the [bitcoinjs](https://github.com/bitcoinjs) ecosystem audit and verify any underlying code for its validity and suitability.
 
-Mistakes and bugs happen, but with your help in resolving and reporting [issues](https://github.com/bitcoinjs/bitcoinjs-lib/issues), together we can produce open source software that is:
+Mistakes and bugs happen, but with your help in resolving and reporting [issues](https://github.com/vips-wallet/bitcoinjs-lib-vips/issues), together we can produce open source software that is:
 
 - Easy to audit and verify,
 - Tested, with test coverage >95%,
@@ -27,12 +26,12 @@ Mistakes and bugs happen, but with your help in resolving and reporting [issues]
 - Friendly, with a strong and helpful community, ready to answer questions.
 
 ## Documentation
-Presently,  we do not have any formal documentation other than our [examples](#examples), please [ask for help](https://github.com/bitcoinjs/bitcoinjs-lib/issues/new) if our examples aren't enough to guide you.
+Presently,  we do not have any formal documentation other than our [examples](#examples), please [ask for help](https://github.com/vips-wallet/bitcoinjs-lib-vips/issues/new) if our examples aren't enough to guide you.
 
 
 ## Installation
 ``` bash
-npm install bitcoinjs-lib
+npm install bitcoinjs-lib-vips
 ```
 
 Typically we support the [Node Maintenance LTS version](https://github.com/nodejs/Release).
@@ -44,7 +43,7 @@ If in doubt, see the [.travis.yml](.travis.yml) for what versions are used by ou
 ## Usage
 
 ### Browser
-The recommended method of using `bitcoinjs-lib` in your browser is through [Browserify](https://github.com/substack/node-browserify).
+The recommended method of using `bitcoinjs-lib-vips` in your browser is through [Browserify](https://github.com/substack/node-browserify).
 If you're familiar with how to use browserify, ignore this and carry on, otherwise, it is recommended to read the tutorial at http://browserify.org/.
 
 **NOTE**: We use Node Maintenance LTS features, if you need strict ES5, use [`--transform babelify`](https://github.com/babel/babelify) in conjunction with your `browserify` step (using an [`es2015`](http://babeljs.io/docs/plugins/preset-es2015/) preset).
