@@ -1,14 +1,11 @@
-let ecc = require('tiny-secp256k1')
-let randomBytes = require('randombytes')
-let typeforce = require('typeforce')
-let types = require('./types')
-let wif = require('wif')
+const ecc = require('tiny-secp256k1')
+const randomBytes = require('randombytes')
+const typeforce = require('typeforce')
+const types = require('./types')
+const wif = require('wif')
 
-let NETWORKS = require('./networks')
-
-// TODO: why is the function name toJSON weird?
-function isPoint (x) { return ecc.isPoint(x) }
-let isOptions = typeforce.maybe(typeforce.compile({
+const NETWORKS = require('./networks')
+const isOptions = typeforce.maybe(typeforce.compile({
   compressed: types.maybe(types.Boolean),
   network: types.maybe(types.Network)
 }))
@@ -57,14 +54,14 @@ function fromPrivateKey (buffer, options) {
 }
 
 function fromPublicKey (buffer, options) {
-  typeforce(isPoint, buffer)
+  typeforce(ecc.isPoint, buffer)
   typeforce(isOptions, options)
   return new ECPair(null, buffer, options)
 }
 
 function fromWIF (string, network) {
-  let decoded = wif.decode(string)
-  let version = decoded.version
+  const decoded = wif.decode(string)
+  const version = decoded.version
 
   // list of networks?
   if (types.Array(network)) {
@@ -90,7 +87,7 @@ function fromWIF (string, network) {
 function makeRandom (options) {
   typeforce(isOptions, options)
   options = options || {}
-  let rng = options.rng || randomBytes
+  const rng = options.rng || randomBytes
 
   let d
   do {

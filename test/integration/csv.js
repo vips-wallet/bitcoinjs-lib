@@ -1,13 +1,12 @@
-/* global describe, it, before */
+const { describe, it, before } = require('mocha')
+const assert = require('assert')
+const bitcoin = require('../../')
+const regtestUtils = require('./_regtest')
+const regtest = regtestUtils.network
+const bip68 = require('bip68')
 
-let assert = require('assert')
-let bitcoin = require('../../')
-let regtestUtils = require('./_regtest')
-let regtest = regtestUtils.network
-let bip68 = require('bip68')
-
-let alice = bitcoin.ECPair.fromWIF('cScfkGjbzzoeewVWmU2hYPUHeVGJRDdFt7WhmrVVGkxpmPP8BHWe', regtest)
-let bob = bitcoin.ECPair.fromWIF('cMkopUXKWsEzAjfa1zApksGRwjVpJRB3831qM9W4gKZsLwjHXA9x', regtest)
+const alice = bitcoin.ECPair.fromWIF('cScfkGjbzzoeewVWmU2hYPUHeVGJRDdFt7WhmrVVGkxpmPP8BHWe', regtest)
+const bob = bitcoin.ECPair.fromWIF('cMkopUXKWsEzAjfa1zApksGRwjVpJRB3831qM9W4gKZsLwjHXA9x', regtest)
 
 describe('bitcoinjs-lib (transactions w/ CSV)', function () {
   // force update MTP
@@ -15,7 +14,7 @@ describe('bitcoinjs-lib (transactions w/ CSV)', function () {
     regtestUtils.mine(11, done)
   })
 
-  let hashType = bitcoin.Transaction.SIGHASH_ALL
+  const hashType = bitcoin.Transaction.SIGHASH_ALL
 
   // IF MTP (from when confirmed) > seconds, aQ can redeem
   function csvCheckSigOutput (aQ, bQ, sequence) {
@@ -37,32 +36,40 @@ describe('bitcoinjs-lib (transactions w/ CSV)', function () {
 
   // expiry will pass, {Alice's signature} OP_TRUE
   it('can create (and broadcast via 3PBP) a Transaction where Alice can redeem the output after the expiry (in the future)', function (done) {
-    this.timeout(30000)
-
     regtestUtils.height(function (err, height) {
       if (err) return done(err)
 
       // 5 blocks from now
-      let sequence = bip68.encode({ blocks: 5 })
-      let redeemScript = csvCheckSigOutput(alice, bob, sequence)
-      let scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript))
-      let address = bitcoin.address.fromOutputScript(scriptPubKey, regtest)
+      const sequence = bip68.encode({ blocks: 5 })
+      const p2sh = bitcoin.payments.p2sh({
+        redeem: {
+          output: csvCheckSigOutput(alice, bob, sequence)
+        },
+        network: regtest
+      })
 
       // fund the P2SH(CSV) address
-      regtestUtils.faucet(address, 1e5, function (err, unspent) {
+      regtestUtils.faucet(p2sh.address, 1e5, function (err, unspent) {
         if (err) return done(err)
 
-        let txb = new bitcoin.TransactionBuilder(regtest)
+        const txb = new bitcoin.TransactionBuilder(regtest)
         txb.addInput(unspent.txId, unspent.vout, sequence)
         txb.addOutput(regtestUtils.RANDOM_ADDRESS, 7e4)
 
         // {Alice's signature} OP_TRUE
-        let tx = txb.buildIncomplete()
-        let signatureHash = tx.hashForSignature(0, redeemScript, hashType)
-        let redeemScriptSig = bitcoin.script.scriptHash.input.encode([
-          bitcoin.script.signature.encode(alice.sign(signatureHash), hashType),
-          bitcoin.opcodes.OP_TRUE
-        ], redeemScript)
+        const tx = txb.buildIncomplete()
+        const signatureHash = tx.hashForSignature(0, p2sh.redeem.output, hashType)
+        const redeemScriptSig = bitcoin.payments.p2sh({
+          network: regtest,
+          redeem: {
+            network: regtest,
+            output: p2sh.redeem.output,
+            input: bitcoin.script.compile([
+              bitcoin.script.signature.encode(alice.sign(signatureHash), hashType),
+              bitcoin.opcodes.OP_TRUE
+            ])
+          }
+        }).input
         tx.setInputScript(0, redeemScriptSig)
 
         // TODO: test that it failures _prior_ to expiry, unfortunately, race conditions when run concurrently
@@ -88,30 +95,38 @@ describe('bitcoinjs-lib (transactions w/ CSV)', function () {
 
   // expiry in the future, {Alice's signature} OP_TRUE
   it('can create (but fail to broadcast via 3PBP) a Transaction where Alice attempts to redeem before the expiry', function (done) {
-    this.timeout(30000)
-
     // two hours after confirmation
-    let sequence = bip68.encode({ seconds: 7168 })
-    let redeemScript = csvCheckSigOutput(alice, bob, sequence)
-    let scriptPubKey = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript))
-    let address = bitcoin.address.fromOutputScript(scriptPubKey, regtest)
+    const sequence = bip68.encode({ seconds: 7168 })
+    const p2sh = bitcoin.payments.p2sh({
+      network: regtest,
+      redeem: {
+        output: csvCheckSigOutput(alice, bob, sequence)
+      }
+    })
 
     // fund the P2SH(CSV) address
-    regtestUtils.faucet(address, 2e4, function (err, unspent) {
+    regtestUtils.faucet(p2sh.address, 2e4, function (err, unspent) {
       if (err) return done(err)
 
-      let txb = new bitcoin.TransactionBuilder(regtest)
+      const txb = new bitcoin.TransactionBuilder(regtest)
       txb.addInput(unspent.txId, unspent.vout, sequence)
       txb.addOutput(regtestUtils.RANDOM_ADDRESS, 1e4)
 
       // {Alice's signature} OP_TRUE
-      let tx = txb.buildIncomplete()
-      let signatureHash = tx.hashForSignature(0, redeemScript, hashType)
-      let redeemScriptSig = bitcoin.script.scriptHash.input.encode([
-        bitcoin.script.signature.encode(alice.sign(signatureHash), hashType),
-        bitcoin.script.signature.encode(bob.sign(signatureHash), hashType),
-        bitcoin.opcodes.OP_TRUE
-      ], redeemScript)
+      const tx = txb.buildIncomplete()
+      const signatureHash = tx.hashForSignature(0, p2sh.redeem.output, hashType)
+      const redeemScriptSig = bitcoin.payments.p2sh({
+        network: regtest,
+        redeem: {
+          network: regtest,
+          output: p2sh.redeem.output,
+          input: bitcoin.script.compile([
+            bitcoin.script.signature.encode(alice.sign(signatureHash), hashType),
+            bitcoin.script.signature.encode(bob.sign(signatureHash), hashType),
+            bitcoin.opcodes.OP_TRUE
+          ])
+        }
+      }).input
       tx.setInputScript(0, redeemScriptSig)
 
       regtestUtils.broadcast(tx.toHex(), function (err) {

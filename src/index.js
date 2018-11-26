@@ -1,8 +1,4 @@
-let script = require('./script')
-let templates = require('./templates')
-for (let key in templates) {
-  script[key] = templates[key]
-}
+const script = require('./script')
 
 module.exports = {
   Block: require('./block'),
@@ -15,5 +11,6 @@ module.exports = {
   crypto: require('./crypto'),
   networks: require('./networks'),
   opcodes: require('bitcoin-ops'),
+  payments: require('./payments'),
   script: script
 }

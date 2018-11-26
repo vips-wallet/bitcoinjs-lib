@@ -1,9 +1,10 @@
-var assert = require('assert')
-var bitcoin = require('../../')
-var dhttp = require('dhttp/200')
+const assert = require('assert')
+const bitcoin = require('../../')
+const dhttp = require('dhttp/200')
 
-var APIPASS = process.env.APIPASS || 'satoshi'
-var APIURL = 'https://api.dcousens.cloud/1'
+const APIPASS = process.env.APIPASS || 'satoshi'
+const APIURL = 'https://api.dcousens.cloud/1'
+const NETWORK = bitcoin.networks.testnet
 
 function broadcast (txHex, callback) {
   dhttp({
@@ -37,7 +38,35 @@ function faucet (address, value, callback) {
     unspents(address, function (err, results) {
       if (err) return callback(err)
 
-      callback(null, results.filter(x => x.txId === txId).pop())
+      const unspents = results.filter(x => x.txId === txId)
+      if (unspents.length === 0) return callback(new Error('Missing unspent'))
+
+      callback(null, unspents.pop())
+    })
+  })
+}
+
+function faucetComplex (output, value, callback) {
+  const keyPair = bitcoin.ECPair.makeRandom({ network: NETWORK })
+  const p2pkh = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network: NETWORK })
+
+  faucet(p2pkh.address, value * 2, (err, unspent) => {
+    if (err) return callback(err)
+
+    const txvb = new bitcoin.TransactionBuilder(NETWORK)
+    txvb.addInput(unspent.txId, unspent.vout, null, p2pkh.output)
+    txvb.addOutput(output, value)
+    txvb.sign(0, keyPair)
+    const txv = txvb.build()
+
+    broadcast(txv.toHex(), function (err) {
+      if (err) return callback(err)
+
+      return callback(null, {
+        txId: txv.getId(),
+        vout: 0,
+        value
+      })
     })
   })
 }
@@ -60,19 +89,15 @@ function verify (txo, callback) {
   fetch(txo.txId, function (err, tx) {
     if (err) return callback(err)
 
-    var txoActual = tx.outs[txo.vout]
+    const txoActual = tx.outs[txo.vout]
     if (txo.address) assert.strictEqual(txoActual.address, txo.address)
     if (txo.value) assert.strictEqual(txoActual.value, txo.value)
     callback()
   })
 }
 
-// TODO: remove
-let baddress = bitcoin.address
-let bcrypto = bitcoin.crypto
 function getAddress (node, network) {
-  network = network || bitcoin.networks.bitcoin
-  return baddress.toBase58Check(bcrypto.hash160(node.publicKey), network.pubKeyHash)
+  return bitcoin.payments.p2pkh({ pubkey: node.publicKey, network }).address
 }
 
 function randomAddress () {
@@ -82,14 +107,15 @@ function randomAddress () {
 }
 
 module.exports = {
-  broadcast: broadcast,
-  faucet: faucet,
-  fetch: fetch,
-  height: height,
-  mine: mine,
-  network: bitcoin.networks.testnet,
-  unspents: unspents,
-  verify: verify,
-  randomAddress: randomAddress,
+  broadcast,
+  faucet,
+  faucetComplex,
+  fetch,
+  height,
+  mine,
+  network: NETWORK,
+  unspents,
+  verify,
+  randomAddress,
   RANDOM_ADDRESS: randomAddress()
 }
